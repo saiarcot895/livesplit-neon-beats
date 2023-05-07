@@ -24,11 +24,11 @@ init {
                     ));
 
         foreach (IntPtr candidatePtr in candidatePtrs) {
-			// Check to see if _startSources is not null
+            // Check to see if _startSources is not null
             var deepCandidatePtr = new DeepPointer(candidatePtr, 0x0, 0x20);
-			print("Checking " + candidatePtr.ToString("x"));
+            print("Checking " + candidatePtr.ToString("x"));
             if (deepCandidatePtr.Deref<long>(game) != 0) {
-				ptr = candidatePtr;
+                ptr = candidatePtr;
                 break;
             }
         }
@@ -40,7 +40,7 @@ init {
             vars.collectibles = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xb8));
             vars.death_counter = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xbc));
             vars.timer = new MemoryWatcher<float>(new DeepPointer(ptr, 0x0, 0xc0));
-			vars.paused = new MemoryWatcher<bool>(new DeepPointer(ptr, 0x0, 0xd4));
+            vars.paused = new MemoryWatcher<bool>(new DeepPointer(ptr, 0x0, 0xd4));
             break;
         }
     }
@@ -57,7 +57,7 @@ update {
     vars.level_id.Update(game);
     vars.collectibles.Update(game);
     vars.death_counter.Update(game);
-	vars.paused.Update(game);
+    vars.paused.Update(game);
 }
 
 isLoading {
@@ -69,7 +69,7 @@ gameTime {
 }
 
 reset {
-	return vars.level_id.Old + 1 != vars.level_id.Current && vars.level_id.Old != vars.level_id.Current;
+    return vars.level_id.Old + 1 != vars.level_id.Current && vars.level_id.Old != vars.level_id.Current;
 }
 
 start {
