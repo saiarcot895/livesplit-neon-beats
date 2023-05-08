@@ -41,7 +41,7 @@ init {
             vars.collectibles = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xb8));
             vars.death_counter = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xbc));
             vars.timer = new MemoryWatcher<float>(new DeepPointer(ptr, 0x0, 0xc0));
-            vars.totalScore = new MemoryWatcher<float>(new DeepPointer(ptr, 0x0, 0xd0));
+            vars.totalScore = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xd0));
             vars.paused = new MemoryWatcher<bool>(new DeepPointer(ptr, 0x0, 0xd4));
             break;
         }
