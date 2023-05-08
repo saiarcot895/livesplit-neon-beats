@@ -3,6 +3,7 @@ state("Neon Beats") {}
 init {
     vars.timer = null;
     IntPtr ptr = IntPtr.Zero;
+    vars.totalTime = 0;
 
     // Find out where the game state struct is located
     foreach (MemoryBasicInformation mbi in game.MemoryPages()) {
@@ -40,6 +41,7 @@ init {
             vars.collectibles = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xb8));
             vars.death_counter = new MemoryWatcher<int>(new DeepPointer(ptr, 0x0, 0xbc));
             vars.timer = new MemoryWatcher<float>(new DeepPointer(ptr, 0x0, 0xc0));
+            vars.totalScore = new MemoryWatcher<float>(new DeepPointer(ptr, 0x0, 0xd0));
             vars.paused = new MemoryWatcher<bool>(new DeepPointer(ptr, 0x0, 0xd4));
             break;
         }
@@ -53,10 +55,12 @@ update {
     if (vars.timer == null) return false; // Init not yet done
 
     vars.timer.Update(game);
+
     vars.in_game.Update(game);
     vars.level_id.Update(game);
     vars.collectibles.Update(game);
     vars.death_counter.Update(game);
+    vars.totalScore.Update(game);
     vars.paused.Update(game);
 }
 
@@ -65,11 +69,30 @@ isLoading {
 }
 
 gameTime {
-    return TimeSpan.FromSeconds(vars.timer.Old);
+    if (vars.totalScore.Old != 0 && vars.totalScore.Current != 0) {
+        return TimeSpan.FromSeconds(vars.totalTime);
+    } else {
+        return TimeSpan.FromSeconds(vars.totalTime + vars.timer.Current);
+    }
 }
 
 reset {
-    return vars.level_id.Old + 1 != vars.level_id.Current && vars.level_id.Old != vars.level_id.Current;
+    if (vars.timer.Current < vars.timer.Old) {
+        if (vars.totalScore.Old != 0 && vars.totalScore.Current == 0 && vars.level_id.Old + 1 == vars.level_id.Current) {
+            // Completed the previous level
+            print("Completed previous level");
+            return false;
+        }
+        if (vars.level_id.Old == vars.level_id.Current && vars.level_id.Current != 0) {
+            // Restarted the current level, except for tutorial level
+            print("Restarted non-tutorial level");
+            vars.totalTime += vars.timer.Old;
+            return false;
+        }
+        print("Restarted tutorial level, or went out-of-order");
+        vars.totalTime = 0;
+        return true;
+    }
 }
 
 start {
@@ -77,5 +100,9 @@ start {
 }
 
 split {
-    return vars.level_id.Old + 1 == vars.level_id.Current;
+    if (vars.totalScore.Old == 0 && vars.totalScore.Current != 0) {
+        // Score is assigned, the level has been completed
+        vars.totalTime += vars.timer.Current;
+        return true;
+    }
 }
